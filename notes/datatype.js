@@ -21,10 +21,9 @@ let discount = null;
   experience: 3
 };
 //function
-function greet(name) {
-  return `Hello, ${name}!`;
+function greet() {
+  console.log("Hello, Tester!");
 }
-//
-
-
-
+greet(); 
+ //operators
+ 
