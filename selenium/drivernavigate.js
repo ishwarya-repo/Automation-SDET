@@ -1,27 +1,47 @@
-const { Builder, By, Key } = require('selenium-webdriver');
+const { Builder, By } = require('selenium-webdriver');
 
 async function input() {
   let driver = await new Builder().forBrowser('chrome').build();
-  await driver.get("https://letcode.in/button")
-  //Goto Home and come back here using driver commanda
-  await driver.findElement(By.id("home").click());
-  await driver.navigate().back();
-  //Get the X & Y co-ordinates
-    await driver.findElement(By.id("position").getRect());
-//Find the color of the button
-await driver.findElement(By.id("color")).getCssValue("background-color");
 
-//height and width 
-await driver.findElement(By.id("property")).getRect();
+  try {
+    console.log("Opening LetCode page...");
+    await driver.get("https://letcode.in/buttons");
+    await driver.sleep(2000);
 
-//Confirm button is disabled
-await driver.findElement(By.id("isDisabled")).isEnabled();
-//long press and the button changes
-await driver.findElement(By.id("isDisabled"));
+    // Click home and go back
+    console.log("Clicking 'Home' and navigating back...");
+    await driver.findElement(By.id("home")).click();
+    await driver.sleep(2000);
+    await driver.navigate().back();
+    await driver.sleep(2000);
 
+    // Get X & Y coordinates
+    const pos = await driver.findElement(By.id("position")).getRect();
+    console.log(`X: ${pos.x}, Y: ${pos.y}`);
 
+    // Get background color
+    const color = await driver.findElement(By.id("color")).getCssValue("background-color");
+    console.log(`Color: ${color}`);
 
-//driver.get(url) - only the same page
-//driver.navigate().to(url) - back -forwaaard
+    // Get height and width
+    const size = await driver.findElement(By.id("property")).getRect();
+    console.log(`Height: ${size.height}, Width: ${size.width}`);
 
+    // Is disabled?
+    const isEnabled = await driver.findElement(By.id("isDisabled")).isEnabled();
+    console.log(`Is 'Disabled' button enabled?: ${isEnabled}`);
+
+    // Long press
+    const longPressBtn = await driver.findElement(By.id("longpress"));
+    const actions = driver.actions({ async: true });
+    await actions.move({ origin: longPressBtn }).press().pause(2000).release().perform();
+
+    await driver.sleep(2000);
+  } catch (err) {
+    console.error("Error:", err);
+  } finally {
+    console.log("Test done. Closing browser...");
+    await driver.quit();
+  }
 }
+input();
