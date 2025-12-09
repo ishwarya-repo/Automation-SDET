@@ -1,0 +1,43 @@
+name: AutoSync PR Changes
+on:
+  pull_request:
+    # Trigger on 'synchronized' (new commits) and 'labeled' (adding the label)
+    types: [synchronized, labeled, opened]
+
+jobs:
+  notify-on-change:
+    runs-on: ubuntu-latest
+    steps:
+      # STEP 1: The Gatekeeper (Check for 'autosync' prefix)
+      # This checks specifically if ANY label starts with "autosync"
+      - name: Check for Label
+        id: check_label
+        run: |
+          echo "Checking for 'autosync' label..."
+          match="false"
+          
+          # Get all labels from the PR
+          labels='${{ toJSON(github.event.pull_request.labels.*.name) }}'
+          
+          # Check if any label starts with "autosync"
+          for label in $(echo $labels | jq -r '.[]'); do
+            if [[ "$label" == autosync* ]]; then
+              match="true"
+              echo "✅ Found active label: $label"
+              break
+            fi
+          done
+          
+          echo "SHOULD_NOTIFY=$match" >> $GITHUB_ENV
+
+      # STEP 2: Send Notification (Only if Step 1 found the label)
+      - name: Send Slack Notification
+        if: env.SHOULD_NOTIFY == 'true'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "🔄 *New Changes Pushed!* (AutoSync Active)\n\n*📌 Feature:* ${{ github.event.pull_request.title }}\n*🏷️ Triggered by:* Label `autosync...`\n*👤 Author:* ${{ github.actor }}\n\n*📝 Latest Commit:*\n${{ github.event.head_commit.message }}\n\n----------------------------------\n👀 <${{ github.event.pull_request.html_url }}|View Updates on GitHub>"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
