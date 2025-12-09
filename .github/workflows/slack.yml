@@ -8,9 +8,54 @@ jobs:
       - name: Send Slack Notification
         uses: slackapi/slack-github-action@v1.24.0
         with:
+          # This payload is formatted for clarity
           payload: |
             {
-              "text": "🚨 New Code Pushed!\n*By:* ${{ github.actor }}\n*Message:* ${{ github.event.head_commit.message }}\n*Link:* https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "🚀 New Update Published",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*📁 Project:*\n${{ github.repository }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*🌿 Branch:*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*👤 Developer:*\n${{ github.actor }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*📝 What Changed:*\n${{ github.event.head_commit.message }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Changes on GitHub",
+                        "emoji": true
+                      },
+                      "url": "${{ github.event.compare }}"
+                    }
+                  ]
+                }
+              ]
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
